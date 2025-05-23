@@ -196,7 +196,7 @@ saveas(gcf, 'meanvar.png', 'png')
 % ---- Task 5: Create data and 95% confidence intervals for each -------- %
 % ---- of the parameters l0 and a                                -------- %
 
-len = 10000;
+len = 1000;
 
 x_tot = zeros(len,2);
 sigma2_tot = zeros(len,1);
@@ -241,8 +241,11 @@ saveas(gcf, 'hista.png', 'png')
 
 figure(8)
 
-medel = mean(l_d0_tot)
-konf = 1.96 *(std(l_d0_tot)/length(l_d0_tot))
+medel = mean(l_d0_tot);
+konf = 1.96 *(std(l_d0_tot)/sqrt(length(l_d0_tot)));
+
+asdf = l_d0_tot > medel - konf & l_d0_tot < medel + konf
+sum(asdf ==1) / length(l_d0_tot)
 
 histogram(l_d0_tot,bins)
 
