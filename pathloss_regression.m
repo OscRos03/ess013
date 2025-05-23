@@ -15,11 +15,11 @@ y = table2array(T(:,4));
 
 figure(1)
 % Plot transmitter and receiver coordinates on a map
-plot(rx_coords(:,1), rx_coords(:,2))
+plot(rx_coords(:,1), rx_coords(:,2), 'g', 'LineWidth', 2)
 hold on
 plot(tx_coord(:,1), tx_coord(:,2),'o','LineWidth',2)
 title('Map (x,y) over measurement area')
-legend({'Receiver locations', 'Transmitter location'})
+legend({'Receiver locations', 'Transmitter location'}, 'Location', 'southeast')
 xlabel('x [m]')
 ylabel('y [m]')
 
@@ -36,9 +36,10 @@ figure(2)
 hold on
 
 scatter(d,y)
-plot(d, A * x)
+plot(d, A * x, 'g', 'LineWidth', 2)
 
 title('Linear Pathloss')
+legend({'Datapoint', 'Model'}, 'Location', 'southeast')
 xlabel('d [m]')
 ylabel('Loss')
 set(gca,'yscale','log')
@@ -50,9 +51,10 @@ figure(3)
 hold on
 
 scatter(d,y)
-plot(d, A * x)
+plot(d, A * x, 'g', 'LineWidth', 2)
 
 title('Log Pathloss')
+legend({'Datapoint', 'Model'}, 'Location', 'southeast')
 xlabel('d [m]')
 ylabel('Loss')
 set(gca,'yscale','log', 'xscale', 'log')
@@ -94,9 +96,10 @@ hold on
 
 scatter(d_no, y_no)
 scatter(d_yes, y_yes, 'r*')
-plot(d_no, A_no * x_no)
+plot(d_no, A_no * x_no, 'g', 'LineWidth', 2)
 
-title('Linear Pathloss w/o outliers')
+title('Linear Pathloss, outliers marked')
+legend({'Datapoint', 'Outlier', 'Model'}, 'Location', 'southeast')
 xlabel('d [m]')
 ylabel('Loss')
 set(gca,'yscale','log') 
@@ -109,9 +112,10 @@ hold on
 
 scatter(d_no, y_no)
 scatter(d_yes, y_yes, 'r*')
-plot(d_no, A_no * x_no)
+plot(d_no, A_no * x_no, 'g', 'LineWidth', 2)
 
-title('Log Pathloss w/o outliers')
+title('Log Pathloss, outliers marked')
+legend({'Datapoint', 'Outlier', 'Model'}, 'Location', 'southeast')
 xlabel('d [m]')
 ylabel('Loss')
 set(gca,'yscale','log', 'xscale', 'log')
@@ -122,9 +126,9 @@ saveas(gcf, 'logpathwoout.png', 'png')
 
 % ----- Task 3c: Optional. Identify outliers on map and explain why ----- %
 figure(1)
-plot(rx_coords(I,1), rx_coords(I,2), '*')
+plot(rx_coords(I,1), rx_coords(I,2), 'r*')
 legend({'Receiver locations', 'Transmitter location', ...
-        'Outliers'})
+        'Outliers'}, 'Location', 'southeast')
 saveas(gcf, 'map.png', 'png')
 % ----------------------------------------------------------------------- %
 
