@@ -13,6 +13,8 @@ d = sqrt((tx_coord(:,1)-rx_coords(:,1)).^2 + ...
 % Get pathlosses
 y = table2array(T(:,4));
 
+%%
+
 figure(1)
 % Plot transmitter and receiver coordinates on a map
 plot(rx_coords(:,1), rx_coords(:,2), 'g', 'LineWidth', 2)
@@ -62,6 +64,8 @@ set(gca,'yscale','log', 'xscale', 'log')
 saveas(gcf, 'logpath.png', 'png')
 
 % ----------------------------------------------------------------------- %
+
+%%
 
 % ----- Task 3b: Perform linear regression excluding outliers ----------- %
 % -- Identify outliers -- %
@@ -135,6 +139,8 @@ saveas(gcf, 'map.png', 'png')
 % ---- Task 4: Create data and determine if the estimator appears ------- %
 % ---- consistent and/or unbiased                                 ------- %
 
+%%
+
 %{
 Function to generate measurements y, of the pathloss at distances d, given
 - vector d, of distances
@@ -154,20 +160,43 @@ sigma2 = (r'*r)/(length(r)-2);
 
 x_gen = A_gen \ y_gen; % Linreg
 
-l_d0
-l_d0_gen = x_gen(1)
-a
-a_gen = x_gen(2)
-r_gen = y_gen - A_gen * x_gen;
-sigma2
-sigma2_gen = (r_gen'*r_gen)/(length(r_gen)-2)
+len = 1000;
+
+x_tot = zeros(len,2);
+sigma2_tot = zeros(len,1);
+cumulative_avg = zeros(len,1);
+
+for i = 1:len
+    [A_gen, y_gen] = get_pathloss(d_gen,d0,l_d0,a,sigma2);
+    x_tot(i,:) = (A_gen \ y_gen)'; % Linreg
+    r_gen = y_gen - A_gen * x_tot(i,:)';
+    sigma2_tot(i) = (r_gen'*r_gen)/(length(r_gen)-2);
+    cumulative_avg(i) = sum(sigma2_tot(1:i)/i);
+end
+
+figure(6)
+hold on
+
+scatter(1:len, cumulative_avg)
+plot(1:len, ones(len,1) * sigma2, 'r', 'LineWidth', 2)
+set(gca,'yscale','log', 'xscale', 'log')
+title('Cumulative mean of variance')
+xlabel('Samples')
+ylabel('Cumulative mean variance')
+legend({'Cumulative mean variance', 'Original variance'}, 'Location', 'southeast')
+
+ylim([sigma2-3, sigma2+3])
+
+saveas(gcf, 'meanvar.png', 'png')
 
 % ----------------------------------------------------------------------- %
+
+%%
 
 % ---- Task 5: Create data and 95% confidence intervals for each -------- %
 % ---- of the parameters l0 and a                                -------- %
 
-len = 100000;
+len = 10000;
 
 x_tot = zeros(len,2);
 sigma2_tot = zeros(len,1);
@@ -186,6 +215,7 @@ bins=40;
 
 figure(6)
 
+%{
 histogram((sigma2_tot - sigma2),bins)
 
 title('Histogram sigma2')
@@ -207,13 +237,17 @@ a_mean = mean(a_tot);
 a_std = std(a,1);
 
 saveas(gcf, 'hista.png', 'png')
+%}
 
 figure(8)
 
-histogram((l_d0_tot - l_d0),bins)
+medel = mean(l_d0_tot)
+konf = 1.96 *(std(l_d0_tot)/length(l_d0_tot))
+
+histogram(l_d0_tot,bins)
 
 title('Histogram l0')
-xlabel('Diff  %')
+xlabel('Value')
 ylabel('Count')
 l_d0_mean = mean(l_d0_tot);
 l_d0_std = std(l_d0_tot, 1);
@@ -222,9 +256,11 @@ saveas(gcf, 'histl0.png', 'png')
 
 % ----------------------------------------------------------------------- %
 
+%%
+
 %{
 Help function that identifies outliers based on the residual r = y - A*x
-exceeding a set threshold resid_th.  
+exceeding a set threshold resid_th.
 %}
 function I = get_outlier_ind(r, resid_th)
     % Get all indices where |r|>resid_th
