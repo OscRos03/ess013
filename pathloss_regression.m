@@ -43,7 +43,7 @@ plot(d, A * x, 'g', 'LineWidth', 2) % Plot linear regression of said values
 title('Linear Pathloss')
 legend({'Datapoint', 'Model'}, 'Location', 'southeast')
 xlabel('d [m]')
-ylabel('Loss')
+ylabel('Loss [dB]')
 set(gca,'yscale','log')
 
 saveas(gcf, 'linpath.png', 'png')
@@ -58,7 +58,7 @@ plot(d, A * x, 'g', 'LineWidth', 2) % Plot linear regression of said values
 title('Log Pathloss')
 legend({'Datapoint', 'Model'}, 'Location', 'southeast')
 xlabel('d [m]')
-ylabel('Loss')
+ylabel('Loss [dB]')
 set(gca,'yscale','log', 'xscale', 'log')
 
 saveas(gcf, 'logpath.png', 'png')
@@ -107,7 +107,7 @@ plot(d_no, A_no * x_no, 'g', 'LineWidth', 2)
 title('Linear Pathloss, outliers marked')
 legend({'Datapoint', 'Outlier', 'Model'}, 'Location', 'southeast')
 xlabel('d [m]')
-ylabel('Loss')
+ylabel('Loss [dB]')
 set(gca,'yscale','log') 
 
 saveas(gcf, 'linpathwoout.png', 'png')
@@ -123,7 +123,7 @@ plot(d_no, A_no * x_no, 'g', 'LineWidth', 2)
 title('Log Pathloss, outliers marked')
 legend({'Datapoint', 'Outlier', 'Model'}, 'Location', 'southeast')
 xlabel('d [m]')
-ylabel('Loss')
+ylabel('Loss [dB]')
 set(gca,'yscale','log', 'xscale', 'log')
 
 saveas(gcf, 'logpathwoout.png', 'png')
@@ -187,7 +187,7 @@ yline(sigma2, 'r', 'LineWidth', 2)
 set(gca, 'xscale', 'log')
 title('Cumulative mean of variance')
 xlabel('Samples')
-ylabel('Cumulative mean variance')
+ylabel('Cumulative mean variance [dB^2/m^2]')
 legend({'Cumulative mean variance', 'Original variance'}, 'Location', 'southeast')
 
 ylim([sigma2-3, sigma2+3])
@@ -221,7 +221,7 @@ scatter(n, sigma2_tot, '.')
 yline(sigma2, 'r', 'LineWidth', 2)
 title('Variance per given population size')
 xlabel('Population size')
-ylabel('Variance')
+ylabel('Variance [dB^2/m^2]')
 legend({'Variance', 'Original variance'}, 'Location', 'southeast')
 
 saveas(gcf, 'var_per_population.png', 'png')
@@ -258,7 +258,7 @@ figure(8)
 histogram(l_d0_tot,bins) % Plot histogram of ld0
 
 title('Histogram l0')
-xlabel('Value')
+xlabel('Value [dB]')
 ylabel('Count')
 
 saveas(gcf, 'hista.png', 'png')
@@ -267,7 +267,7 @@ figure(9)
 histogram(a_tot,bins) % Plot histogram for a
 
 title('Histogram a')
-xlabel('Value')
+xlabel('Value [dB/m]')
 ylabel('Count')
 
 saveas(gcf, 'histl0.png', 'png')
