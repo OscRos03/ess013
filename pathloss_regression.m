@@ -196,7 +196,7 @@ saveas(gcf, 'meanvar.png', 'png')
 % ---- Task 5: Create data and 95% confidence intervals for each -------- %
 % ---- of the parameters l0 and a                                -------- %
 
-len = 1000;
+len = 10000;
 
 x_tot = zeros(len,2);
 sigma2_tot = zeros(len,1);
@@ -211,52 +211,28 @@ end
 l_d0_tot = x_tot(:,1);
 a_tot = x_tot(:,2);
 
+[l_d0_low, l_d0__high] = conf_interval(l_d0_tot)
+[a_low, a_high] = conf_interval(a_tot)
+
 bins=40;
 
-figure(6)
-
-%{
-histogram((sigma2_tot - sigma2),bins)
-
-title('Histogram sigma2')
-xlabel('Diff %')
-ylabel('Count')
-sigma2_mean = mean(sigma2_tot);
-sigma2_std = std(sigma2_tot, 1);
-
-saveas(gcf, 'histsig2.png', 'png')
-
 figure(7)
-
-histogram((a_tot - a),bins)
-
-title('Histogram a')
-xlabel('Diff %')
-ylabel('Count')
-a_mean = mean(a_tot);
-a_std = std(a,1);
-
-saveas(gcf, 'hista.png', 'png')
-%}
-
-figure(8)
-
-medel = mean(l_d0_tot);
-konf = 1.96 *(std(l_d0_tot)/sqrt(length(l_d0_tot)));
-
-asdf = l_d0_tot > medel - konf & l_d0_tot < medel + konf
-sum(asdf ==1) / length(l_d0_tot)
-
 histogram(l_d0_tot,bins)
 
 title('Histogram l0')
 xlabel('Value')
 ylabel('Count')
-l_d0_mean = mean(l_d0_tot);
-l_d0_std = std(l_d0_tot, 1);
+
+saveas(gcf, 'hista.png', 'png')
+
+figure(8)
+histogram(a_tot,bins)
+
+title('Histogram a')
+xlabel('Value')
+ylabel('Count')
 
 saveas(gcf, 'histl0.png', 'png')
-
 % ----------------------------------------------------------------------- %
 
 %%
@@ -268,4 +244,14 @@ exceeding a set threshold resid_th.
 function I = get_outlier_ind(r, resid_th)
     % Get all indices where |r|>resid_th
     I = find(abs(r) > resid_th);
+end
+
+function [C1, C2] = conf_interval(data)
+    n = length(data);
+    u = mean(data);
+    res = data - u;
+    s = sqrt(sum(res.^2)/(n-1));
+    i = s * 1.9600 / sqrt(n);
+    C1 = u - i;
+    C2 = u + i;
 end
