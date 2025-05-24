@@ -211,8 +211,10 @@ end
 l_d0_tot = x_tot(:,1);
 a_tot = x_tot(:,2);
 
-[l_d0_low, l_d0__high] = conf_interval(l_d0_tot)
-[a_low, a_high] = conf_interval(a_tot)
+[l_d0_low, l_d0__high, ul, il] = conf_interval(l_d0_tot)
+[a_low, a_high, ua, ia] = conf_interval(a_tot)
+
+% oiia oiia
 
 bins=40;
 
@@ -246,7 +248,7 @@ function I = get_outlier_ind(r, resid_th)
     I = find(abs(r) > resid_th);
 end
 
-function [C1, C2] = conf_interval(data)
+function [C1, C2, u, i] = conf_interval(data)
     n = length(data);
     u = mean(data);
     res = data - u;
