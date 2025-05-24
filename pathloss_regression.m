@@ -29,16 +29,16 @@ ylabel('y [m]')
 
 d0 = 1;
 
-logd = 10*log10(d./d0);
-A = [ones(length(logd),1), logd];
-x = A \ y; % Linreg
+logd = 10*log10(d./d0); 
+A = [ones(length(logd),1), logd]; % Create A matrix as seen in report
+x = A \ y; % Do linear regression on data
 
 % Plot linlog
 figure(2)
 hold on
 
-scatter(d,y)
-plot(d, A * x, 'g', 'LineWidth', 2)
+scatter(d,y) % Scatter plot of real distance vs path loss
+plot(d, A * x, 'g', 'LineWidth', 2) % Plot linear regression of said values
 
 title('Linear Pathloss')
 legend({'Datapoint', 'Model'}, 'Location', 'southeast')
@@ -52,8 +52,8 @@ saveas(gcf, 'linpath.png', 'png')
 figure(3)
 hold on
 
-scatter(d,y)
-plot(d, A * x, 'g', 'LineWidth', 2)
+scatter(d,y) % Scatter plot of real distance vs path loss
+plot(d, A * x, 'g', 'LineWidth', 2) % Plot linear regression of said values
 
 title('Log Pathloss')
 legend({'Datapoint', 'Model'}, 'Location', 'southeast')
@@ -98,6 +98,8 @@ d_yes = d(I);
 figure(4)
 hold on
 
+% Same as 3a but with no outliers in linear regression
+% Outliers plotted separately
 scatter(d_no, y_no)
 scatter(d_yes, y_yes, 'r*')
 plot(d_no, A_no * x_no, 'g', 'LineWidth', 2)
@@ -150,36 +152,39 @@ Function to generate measurements y, of the pathloss at distances d, given
 - scalar sigma2, variance of noise in s-term
 %}
 
-d_gen = (50:1800)';
-l_d0 = x_no(1);
-a = x_no(2);
+l_d0 = x_no(1); % l_d0 of model with outliers excluded
+a = x_no(2);    % a of model with outliers excluded
 r = y - A * x;
-sigma2 = (r'*r)/(length(r)-2);
+sigma2 = (r'*r)/(length(r)-2); % Estimated variance of original data
 
-[A_gen, y_gen] = get_pathloss(d_gen,d0,l_d0,a,sigma2);
+% --------- Check unbiasedness -----------
 
-x_gen = A_gen \ y_gen; % Linreg
-
-len = 1000;
+len = 1000; % Amount of estimator samples
+d_gen = (50:1800)'; % Data point spacing
 
 x_tot = zeros(len,2);
 sigma2_tot = zeros(len,1);
 cumulative_avg = zeros(len,1);
 
+% 
 for i = 1:len
+    % Genetate data points according to model
     [A_gen, y_gen] = get_pathloss(d_gen,d0,l_d0,a,sigma2);
     x_tot(i,:) = (A_gen \ y_gen)'; % Linreg
-    r_gen = y_gen - A_gen * x_tot(i,:)';
-    sigma2_tot(i) = (r_gen'*r_gen)/(length(r_gen)-2);
-    cumulative_avg(i) = sum(sigma2_tot(1:i)/i);
+    r_gen = y_gen - A_gen * x_tot(i,:)'; % Calculate residual
+    sigma2_tot(i) = (r_gen'*r_gen)/(length(r_gen)-2); % Estimate variance
+    cumulative_avg(i) = sum(sigma2_tot(1:i)/i); % Calculate cumulative mean
 end
 
 figure(6)
 hold on
 
-scatter(1:len, cumulative_avg)
-plot(1:len, ones(len,1) * sigma2, 'r', 'LineWidth', 2)
-set(gca,'yscale','log', 'xscale', 'log')
+% Plot cumulative mean of variance with logarithmic x-axis
+% With a horizontal line of the variance of the original data set
+% as a reference
+scatter(1:len, cumulative_avg, '.')
+yline(sigma2, 'r', 'LineWidth', 2)
+set(gca, 'xscale', 'log')
 title('Cumulative mean of variance')
 xlabel('Samples')
 ylabel('Cumulative mean variance')
@@ -188,6 +193,39 @@ legend({'Cumulative mean variance', 'Original variance'}, 'Location', 'southeast
 ylim([sigma2-3, sigma2+3])
 
 saveas(gcf, 'meanvar.png', 'png')
+
+% --------- Check consistency -----------
+
+n = 50:10:5000; % Vector of population sizes
+len = length(n);
+
+sigma2_tot = zeros(len,1);
+
+for i = 1:len
+    % Genetate n(i) evenly spaced data points
+    d_gen = linspace(50,1800,n(i))';
+    [A_gen, y_gen] = get_pathloss(d_gen,d0,l_d0,a,sigma2);
+    
+    x_gen = (A_gen \ y_gen)'; % Linreg
+    r_gen = y_gen - A_gen * x_gen'; % Calculate residual
+    sigma2_tot(i) = (r_gen'*r_gen)/(length(r_gen)-2); % Estimate variance
+end
+
+figure(7)
+hold on
+
+% Plot change in variance as population size of generated data is increased
+% With a horizontal line of the variance of the original data set
+% as a reference
+scatter(n, sigma2_tot, '.')
+yline(sigma2, 'r', 'LineWidth', 2)
+title('Variance per given population size')
+xlabel('Population size')
+ylabel('Variance')
+legend({'Variance', 'Original variance'}, 'Location', 'southeast')
+
+saveas(gcf, 'var_per_population.png', 'png')
+
 
 % ----------------------------------------------------------------------- %
 
@@ -198,28 +236,26 @@ saveas(gcf, 'meanvar.png', 'png')
 
 len = 10000;
 
-x_tot = zeros(len,2);
+x_tot = zeros(len,2); % Init variables
 sigma2_tot = zeros(len,1);
 
-for i = 1:len
-    [A_gen, y_gen] = get_pathloss(d_gen,d0,l_d0,a,sigma2);
-    x_tot(i,:) = (A_gen \ y_gen)'; % Linreg
+for i = 1:len % Do this 10000 times
+    [A_gen, y_gen] = get_pathloss(d_gen,d0,l_d0,a,sigma2); % Generate data
+    x_tot(i,:) = (A_gen \ y_gen)'; % Calculate and store current dataset a and ld0
     r_gen = y_gen - A_gen * x_tot(i,:)';
-    sigma2_tot(i) = (r_gen'*r_gen)/(length(r_gen)-2);
+    sigma2_tot(i) = (r_gen'*r_gen)/(length(r_gen)-2); % Calculate and store current dataset variance
 end
 
 l_d0_tot = x_tot(:,1);
 a_tot = x_tot(:,2);
 
-[l_d0_low, l_d0__high, ul, il] = conf_interval(l_d0_tot)
-[a_low, a_high, ua, ia] = conf_interval(a_tot)
-
-% oiia oiia
+[l_d0_low, l_d0__high, ul, il] = conf_interval(l_d0_tot) % Print confidence interval for ld0
+[a_low, a_high, ua, ia] = conf_interval(a_tot) % Same for a
 
 bins=40;
 
-figure(7)
-histogram(l_d0_tot,bins)
+figure(8)
+histogram(l_d0_tot,bins) % Plot histogram of ld0
 
 title('Histogram l0')
 xlabel('Value')
@@ -227,8 +263,8 @@ ylabel('Count')
 
 saveas(gcf, 'hista.png', 'png')
 
-figure(8)
-histogram(a_tot,bins)
+figure(9)
+histogram(a_tot,bins) % Plot histogram for a
 
 title('Histogram a')
 xlabel('Value')
@@ -248,12 +284,16 @@ function I = get_outlier_ind(r, resid_th)
     I = find(abs(r) > resid_th);
 end
 
+%{
+Another help function which calculates highest and lowest value in
+confidence interval as well as mean and +/- value
+%}
 function [C1, C2, u, i] = conf_interval(data)
     n = length(data);
     u = mean(data);
     res = data - u;
-    s = sqrt(sum(res.^2)/(n-1));
-    i = s * 1.9600 / sqrt(n);
+    s = sqrt(sum(res.^2)/(n-1)); % Get standard deviation
+    i = s * 1.9600 / sqrt(n); % Get +/- value
     C1 = u - i;
     C2 = u + i;
 end
